@@ -34,3 +34,10 @@ export const buscarProdutos = async () => {
 export const removerProduto = async (id) => {
   await db.runAsync('DELETE FROM produtos WHERE id = ?', [id]);
 };
+
+export const atualizarProduto = async (id, nome, marca, preco, descricao) => {
+  await db.runAsync(
+    'UPDATE produtos SET nome = ?, marca = ?, preco = ?, descricao = ? WHERE id = ?',
+    [nome, marca, preco, descricao, id]
+  );
+};
