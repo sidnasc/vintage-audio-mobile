@@ -2,16 +2,17 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function ProductItem({ item, onDelete, onEdit, isAdmin }) {
+export default function ProductItem({ item, onDelete, onEdit, onDetail, isAdmin }) {
   return (
     <View style={styles.containerExterno}>
-      {/* Se for Admin, clica para editar. Se não, apenas visualiza (sem ação ou abre detalhes futuros) */}
       <TouchableOpacity 
         style={styles.infoContainer} 
-        onPress={() => isAdmin ? onEdit(item) : null} // Só edita se for admin
-        activeOpacity={isAdmin ? 0.7 : 1}
+        // LÓGICA DO CLIQUE:
+        // Se for Admin -> Abre Edição
+        // Se for Cliente -> Abre Detalhes (onDetail)
+        onPress={() => isAdmin ? onEdit(item) : onDetail(item)} 
+        activeOpacity={0.7}
       >
-        {/* FOTO DO PRODUTO */}
         {item.imagem ? (
           <Image source={{ uri: item.imagem }} style={styles.imagem} />
         ) : (
@@ -27,7 +28,6 @@ export default function ProductItem({ item, onDelete, onEdit, isAdmin }) {
         </View>
       </TouchableOpacity>
 
-      {/* Só mostra a lixeira se for ADMIN */}
       {isAdmin && (
         <TouchableOpacity onPress={() => onDelete(item.id)} style={styles.botaoDelete}>
           <Ionicons name="trash-outline" size={24} color="#e74c3c" />
