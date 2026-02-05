@@ -1,22 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert, Keyboard } from 'react-native';
-import { initDB, adicionarProduto, buscarProdutos } from '../services/Database';
+import { initDB, adicionarProduto, buscarProdutos, removerProduto } from '../services/Database';
 import ProductItem from '../components/ProductItem';
 
 export default function HomeScreen() {
   const [nome, setNome] = useState('');
   const [marca, setMarca] = useState('');
-  const [preco, setPreco] = useState(''); // Novo campo
-  const [descricao, setDescricao] = useState(''); // Novo campo
+  const [preco, setPreco] = useState('');
+  const [descricao, setDescricao] = useState('');
   const [lista, setLista] = useState([]);
 
   useEffect(() => {
-    initDB()
-      .then(() => {
-        console.log('Banco pronto');
-        atualizarLista();
-      })
-      .catch(err => console.log('Erro DB:', err));
+    initDB().then(atualizarLista);
   }, []);
 
   const atualizarLista = () => {
@@ -26,35 +21,46 @@ export default function HomeScreen() {
   };
 
   const handleSalvar = () => {
-    // Validação simples: Nome, Marca e Preço são obrigatórios
     if (!nome || !marca || !preco) {
-      Alert.alert('Atenção', 'Por favor, preencha Nome, Marca e Preço.');
+      Alert.alert('Atenção', 'Preencha Nome, Marca e Preço');
       return;
     }
 
-    // Convertendo preço de texto ("1500") para numero (1500.00)
-    const precoNumero = parseFloat(preco.replace(',', '.')); // Aceita virgula ou ponto
-
-    if (isNaN(precoNumero)) {
-      Alert.alert('Erro', 'O preço deve ser um número válido.');
-      return;
-    }
+    const precoNumero = parseFloat(preco.replace(',', '.'));
+    if (isNaN(precoNumero)) return Alert.alert('Erro', 'Preço inválido');
 
     adicionarProduto(nome, marca, precoNumero, descricao)
       .then(() => {
-        Alert.alert('Sucesso', 'Item cadastrado com sucesso!');
         atualizarLista();
-        // Limpar os campos
         setNome('');
         setMarca('');
         setPreco('');
         setDescricao('');
-        Keyboard.dismiss(); // Esconde o teclado
+        Keyboard.dismiss();
       })
-      .catch(err => {
-        console.log(err);
-        Alert.alert('Erro', 'Não foi possível salvar o item.');
-      });
+      .catch(err => console.log(err));
+  };
+
+  // NOVA FUNÇÃO: Deletar com confirmação
+  const handleRemover = (id) => {
+    Alert.alert(
+      "Excluir Item",
+      "Tem certeza que deseja remover este equipamento?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "Excluir", 
+          onPress: () => {
+            removerProduto(id)
+              .then(() => {
+                atualizarLista(); // Atualiza a lista após deletar
+              })
+              .catch(err => console.log(err));
+          },
+          style: "destructive"
+        }
+      ]
+    );
   };
 
   return (
@@ -74,31 +80,33 @@ export default function HomeScreen() {
           value={marca}
           onChangeText={setMarca}
         />
-        
-        {/* Novos Campos */}
         <View style={styles.row}>
           <TextInput 
             placeholder="Preço (R$)" 
             style={[styles.input, styles.inputMetade]} 
             value={preco}
             onChangeText={setPreco}
-            keyboardType="numeric" // Teclado numérico
+            keyboardType="numeric" 
           />
           <TextInput 
-            placeholder="Descrição (Opcional)" 
+            placeholder="Descrição" 
             style={[styles.input, styles.inputMetade]} 
             value={descricao}
             onChangeText={setDescricao}
           />
         </View>
-
         <Button title="SALVAR PRODUTO" onPress={handleSalvar} color="#d35400" />
       </View>
 
       <FlatList
         data={lista}
         keyExtractor={item => item.id.toString()}
-        renderItem={({ item }) => <ProductItem item={item} />}
+        renderItem={({ item }) => (
+          <ProductItem 
+            item={item} 
+            onDelete={handleRemover} // Passando a função para o componente filho
+          />
+        )}
         contentContainerStyle={styles.lista}
       />
     </View>
@@ -111,6 +119,6 @@ const styles = StyleSheet.create({
   form: { marginBottom: 20 },
   input: { backgroundColor: 'white', padding: 12, marginBottom: 10, borderRadius: 5, borderWidth: 1, borderColor: '#ddd' },
   row: { flexDirection: 'row', justifyContent: 'space-between' },
-  inputMetade: { width: '48%' }, // Divide os campos em dois
+  inputMetade: { width: '48%' },
   lista: { paddingBottom: 50 }
 });
