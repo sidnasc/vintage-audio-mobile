@@ -1,14 +1,5 @@
-import { useEffect, useState } from "react";
-import {
-    Button,
-    FlatList,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
-} from "react-native";
-import {
-    adicionarProduto,
-    buscarProdutos,
-    initDB,
-} from "./src/services/Database";
+import HomeScreen from "./src/screens/HomeScreen";
+
+export default function App() {
+  return <HomeScreen />;
+}
