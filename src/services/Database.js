@@ -30,3 +30,7 @@ export const buscarProdutos = async () => {
   const allRows = await db.getAllAsync('SELECT * FROM produtos');
   return allRows;
 };
+
+export const removerProduto = async (id) => {
+  await db.runAsync('DELETE FROM produtos WHERE id = ?', [id]);
+};
