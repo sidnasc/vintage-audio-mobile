@@ -110,7 +110,6 @@ Este projeto está sob a licença MIT.
 
 ---
 
-Feito por **Ananias Carlos, Davi Carreiro, Michel Júnior e Sidney de Nascimento**
+Feito por **Ananias Carlos, Davi Carreiro, Michel Júnior e Sidney Nascimento.**
 
 ```
-
