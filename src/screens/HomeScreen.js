@@ -15,22 +15,41 @@ export default function HomeScreen() {
   const [imagem, setImagem] = useState(null);
   
   // --- ESTADOS DE CONTROLE ---
-  const [lista, setLista] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false); // Modal de Cadastro
+  const [lista, setLista] = useState([]); // Lista original do Banco (banco de dados)
+  const [listaFiltrada, setListaFiltrada] = useState([]); // Lista que aparece na tela (filtrada)
+  const [busca, setBusca] = useState(''); // Texto da pesquisa
+  
+  const [modalVisible, setModalVisible] = useState(false);
   const [idParaEditar, setIdParaEditar] = useState(null);
   const [isAdmin, setIsAdmin] = useState(true);
 
-  // --- NOVO: ESTADOS DE DETALHES ---
+  // --- ESTADOS DE DETALHES ---
   const [modalDetalhesVisible, setModalDetalhesVisible] = useState(false);
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
 
+  // 1. Carrega dados ao abrir
   useEffect(() => {
     initDB().then(atualizarLista);
   }, []);
 
+  // 2. EFEITO DE FILTRO (A Mágica acontece aqui)
+  // Toda vez que o texto da 'busca' ou a 'lista' original mudar, esse código roda.
+  useEffect(() => {
+    if (busca === '') {
+      setListaFiltrada(lista);
+    } else {
+      setListaFiltrada(
+        lista.filter(item => 
+          item.nome.toLowerCase().includes(busca.toLowerCase()) || 
+          item.marca.toLowerCase().includes(busca.toLowerCase())
+        )
+      );
+    }
+  }, [busca, lista]);
+
   const atualizarLista = () => {
     buscarProdutos()
-      .then(produtos => setLista(produtos))
+      .then(produtos => setLista(produtos)) // Atualiza a lista original
       .catch(err => console.log(err));
   };
 
@@ -42,7 +61,6 @@ export default function HomeScreen() {
     if (!result.canceled) setImagem(result.assets[0].uri);
   };
 
-  // --- FUNÇÕES DE ABRIR MODAIS ---
   const abrirModalNovo = () => {
     setIdParaEditar(null);
     setNome(''); setMarca(''); setPreco(''); setDescricao(''); setImagem(null);
@@ -56,7 +74,6 @@ export default function HomeScreen() {
     setModalVisible(true);
   };
 
-  // NOVA FUNÇÃO: Abrir Detalhes
   const abrirDetalhes = (item) => {
     setProdutoSelecionado(item);
     setModalDetalhesVisible(true);
@@ -94,21 +111,37 @@ export default function HomeScreen() {
           <Switch value={isAdmin} onValueChange={setIsAdmin} trackColor={{ false: "#767577", true: "#d35400" }} />
         </View>
       </View>
+
+      {/* --- BARRA DE PESQUISA (NOVO) --- */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
+        <TextInput
+          placeholder="Buscar por nome ou marca..."
+          style={styles.searchInput}
+          value={busca}
+          onChangeText={setBusca}
+        />
+        {busca.length > 0 && (
+          <TouchableOpacity onPress={() => setBusca('')}>
+            <Ionicons name="close-circle" size={20} color="#ccc" />
+          </TouchableOpacity>
+        )}
+      </View>
       
       <FlatList
-        data={lista}
+        data={listaFiltrada} // Usamos a lista filtrada agora!
         keyExtractor={item => item.id.toString()}
         renderItem={({ item }) => (
           <ProductItem 
             item={item} 
             onDelete={handleRemover} 
             onEdit={abrirModalEdicao}
-            onDetail={abrirDetalhes} // Passamos a nova função
+            onDetail={abrirDetalhes} 
             isAdmin={isAdmin} 
           />
         )}
         contentContainerStyle={styles.lista}
-        ListEmptyComponent={<Text style={styles.textoVazio}>Nenhum equipamento cadastrado.</Text>}
+        ListEmptyComponent={<Text style={styles.textoVazio}>Nenhum equipamento encontrado.</Text>}
       />
 
       {isAdmin && (
@@ -117,7 +150,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       )}
 
-      {/* --- MODAL DE CADASTRO/EDIÇÃO --- */}
+      {/* --- MODAIS (Igual ao anterior) --- */}
       <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
@@ -140,27 +173,23 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
-      {/* --- NOVO: MODAL DE DETALHES (LEITURA) --- */}
       <Modal animationType="fade" transparent={true} visible={modalDetalhesVisible} onRequestClose={() => setModalDetalhesVisible(false)}>
         <View style={styles.centeredView}>
           <View style={styles.modalViewDetalhes}>
             {produtoSelecionado && (
               <>
                 <Image 
-                  source={produtoSelecionado.imagem ? { uri: produtoSelecionado.imagem } : { uri: 'https://cdn-icons-png.flaticon.com/512/1042/1042390.png' }}
+                  // Correção definitiva da imagem placeholder
+                  source={produtoSelecionado.imagem ? { uri: produtoSelecionado.imagem } : { uri: 'https://cdn-icons-png.flaticon.com/512/1042/1042390.png' }} 
                   style={styles.fotoDetalhe} 
                 />
                 <Text style={styles.marcaDetalhe}>{produtoSelecionado.marca}</Text>
                 <Text style={styles.nomeDetalhe}>{produtoSelecionado.nome}</Text>
                 <Text style={styles.precoDetalhe}>R$ {produtoSelecionado.preco.toFixed(2)}</Text>
-                
                 <ScrollView style={styles.scrollDescricao}>
                   <Text style={styles.labelDescricao}>Sobre o equipamento:</Text>
-                  <Text style={styles.textoDescricao}>
-                    {produtoSelecionado.descricao || "Sem descrição disponível."}
-                  </Text>
+                  <Text style={styles.textoDescricao}>{produtoSelecionado.descricao || "Sem descrição disponível."}</Text>
                 </ScrollView>
-
                 <TouchableOpacity style={styles.botaoFechar} onPress={() => setModalDetalhesVisible(false)}>
                   <Text style={styles.textoBotaoFechar}>FECHAR</Text>
                 </TouchableOpacity>
@@ -169,7 +198,6 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
-
     </View>
   );
 }
@@ -180,6 +208,16 @@ const styles = StyleSheet.create({
   titulo: { fontSize: 24, fontWeight: 'bold', color: '#2c3e50' },
   switchContainer: { alignItems: 'center' },
   switchLabel: { fontSize: 10, color: '#555', marginBottom: 2 },
+  
+  // ESTILO DA BARRA DE PESQUISA
+  searchContainer: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: 'white',
+    marginHorizontal: 20, marginBottom: 15, paddingHorizontal: 15, height: 45,
+    borderRadius: 25, borderWidth: 1, borderColor: '#ddd', elevation: 2
+  },
+  searchIcon: { marginRight: 10 },
+  searchInput: { flex: 1, fontSize: 16, color: '#333' },
+
   lista: { paddingHorizontal: 20, paddingBottom: 100 },
   textoVazio: { textAlign: 'center', marginTop: 50, color: '#aaa' },
   fab: { position: 'absolute', width: 60, height: 60, alignItems: 'center', justifyContent: 'center', right: 20, bottom: 30, backgroundColor: '#d35400', borderRadius: 30, elevation: 8 },
@@ -195,7 +233,6 @@ const styles = StyleSheet.create({
   inputMetade: { width: '48%' },
   botoesModal: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 },
 
-  // --- ESTILOS DO MODAL DE DETALHES ---
   modalViewDetalhes: { width: '85%', backgroundColor: "white", borderRadius: 20, padding: 0, elevation: 10, overflow: 'hidden', alignItems: 'center' },
   fotoDetalhe: { width: '100%', height: 250, resizeMode: 'cover' },
   marcaDetalhe: { fontSize: 14, color: '#7f8c8d', textTransform: 'uppercase', marginTop: 15, fontWeight: 'bold' },
