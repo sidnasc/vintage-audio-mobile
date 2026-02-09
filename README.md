@@ -110,15 +110,7 @@ Este projeto está sob a licença MIT.
 
 ---
 
-Feito com 💜 por **[Seu Nome]**
+Feito com 💜 por **Ananias Carlos, Davi Carreiro, Michel Júnior e Sidney de Nascimento**
 
 ```
 
-### **Dica Pro:**
-Para as imagens funcionarem na seção "Screenshots":
-1.  Tire 3 prints do seu celular.
-2.  Crie uma pasta na raiz do projeto ou dentro de assets (ex: `assets/prints`).
-3.  Salve os prints como `print1.png`, `print2.png`, etc.
-4.  O código acima já está configurado para buscar nessas pastas!
-
-```
