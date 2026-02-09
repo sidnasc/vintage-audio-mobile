@@ -32,14 +32,6 @@ O app permite cadastrar receivers, amplificadores e caixas de som, salvando foto
 - **Mídia:** [expo-image-picker](https://docs.expo.dev/versions/latest/sdk/imagepicker/)
 - **Ícones:** Ionicons (@expo/vector-icons)
 
-## 📸 Screenshots
-
-| Tela Inicial (Admin) | Modal de Cadastro | Detalhes (Cliente) |
-|:---:|:---:|:---:|
-| <img src="./assets/print1.png" width="200" /> | <img src="./assets/print2.png" width="200" /> | <img src="./assets/print3.png" width="200" /> |
-
-*(Substitua os caminhos acima pelos prints reais do seu projeto)*
-
 ## 🚀 Como rodar o projeto
 
 ### Pré-requisitos
@@ -93,17 +85,6 @@ vintage-audio-mobile/
 
 ```
 
-## 📦 Gerando o APK (Android)
-
-Para gerar o instalável para Android, utilize o EAS Build:
-
-```bash
-npm install -g eas-cli
-eas login
-eas build -p android --profile preview
-
-```
-
 ## 📝 Licença
 
 Este projeto está sob a licença MIT.
@@ -111,5 +92,3 @@ Este projeto está sob a licença MIT.
 ---
 
 Feito por **Ananias Carlos, Davi Carreiro, Michel Júnior e Sidney Nascimento.**
-
-```
